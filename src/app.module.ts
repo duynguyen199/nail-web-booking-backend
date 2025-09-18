@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserRepository } from './auth/user.repository';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -9,13 +9,13 @@ import { UserRepository } from './auth/user.repository';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'postgres',
+      password: 'Passw0rd',
       database: 'postgres',
       autoLoadEntities: true,
-      synchronize: false, // Set to true only in development, not production
+      synchronize: true, // Enable in development to auto-create tables
     }),
-    TypeOrmModule.forFeature([UserRepository]), // Register custom repositories
+    AuthModule, // Import AuthModule
   ],
-  providers: [UserRepository],
+  providers: [],
 })
 export class AppModule {}
