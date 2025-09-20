@@ -4,13 +4,16 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column()
+  @Column({ unique: true, type: 'varchar', length: 255 })
   username: string;
-  @Column()
-  password: string;
-  @Column({ unique: true })
+
+  @Column({ type: 'varchar', length: 255 })
+  password: string; // Ensure length is sufficient for hashed password (e.g., 255)
+
+  @Column({ unique: true, type: 'varchar', length: 255 })
   email: string;
-  @Column()
+
+  @Column({ type: 'varchar', length: 20 })
   phoneNumber: string;
   @Column({
     type: 'enum',

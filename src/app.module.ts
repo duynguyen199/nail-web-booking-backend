@@ -9,7 +9,7 @@ import { AuthModule } from './auth/auth.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'Passw0rd',
+      password: 'postgres',
       database: 'postgres',
       autoLoadEntities: true,
       synchronize: true, // Enable in development to auto-create tables
