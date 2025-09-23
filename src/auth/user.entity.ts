@@ -15,6 +15,7 @@ export class User {
 
   @Column({ type: 'varchar', length: 20 })
   phoneNumber: string;
+
   @Column({
     type: 'enum',
     enum: ['CLIENT', 'NAIL_TECH', 'ADMIN'],

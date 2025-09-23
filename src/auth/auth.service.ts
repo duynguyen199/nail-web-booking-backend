@@ -6,6 +6,7 @@ import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt.payload.interface';
+import { SignInDTO } from './dto/auth-sigin-credentials.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,10 +31,8 @@ export class AuthService {
     });
     await this.userRepository.save(user);
   }
-  async signin(
-    authCredentialDTO: AuthCredentialDTO,
-  ): Promise<{ accessToken: string }> {
-    const { username, password } = authCredentialDTO;
+  async signin(siginDTO: SignInDTO): Promise<{ accessToken: string }> {
+    const { username, password } = siginDTO;
     const user = await this.userRepository.findOne({ where: { username } });
 
     if (user && (await bcrypt.compare(password, user.password))) {
