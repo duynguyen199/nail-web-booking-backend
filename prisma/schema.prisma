@@ -13,3 +13,20 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String
+  email       String   @unique
+  phoneNumber String
+  role        UserRole @default(CLIENT)
+  avatarUrl   String?  // optional because nullable was allowed
+  createdAt   DateTime @default(now())
+}
+
+enum UserRole {
+  CLIENT
+  NAIL_TECH
+  ADMIN
+}

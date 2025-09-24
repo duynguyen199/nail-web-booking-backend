@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { PrismaService } from './prisma/prisma.service';
 
 @Module({
   imports: [
@@ -14,8 +15,8 @@ import { AuthModule } from './auth/auth.module';
       autoLoadEntities: true,
       synchronize: true, // Enable in development to auto-create tables
     }),
-    AuthModule, // Import AuthModule
+    AuthModule,
   ],
-  providers: [],
+  providers: [PrismaService],
 })
 export class AppModule {}

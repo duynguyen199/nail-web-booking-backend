@@ -8,6 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { UserRole } from '../usertype/user.type';
 export class AuthCredentialDTO {
   @IsString()
   @ApiProperty({
@@ -55,16 +56,16 @@ export class AuthCredentialDTO {
   })
   phoneNumber: string;
 
-  @IsEnum(['CLIENT', 'NAIL_TECH', 'ADMIN'], {
+  @IsEnum(UserRole, {
     message: 'role must be CLIENT, NAIL_TECH, or ADMIN',
   })
   @ApiProperty({
     description: 'The role of the user',
-    enum: ['CLIENT', 'NAIL_TECH', 'ADMIN'],
+    enum: UserRole,
     example: 'CLIENT',
     required: true,
   })
-  role: 'CLIENT' | 'NAIL_TECH' | 'ADMIN';
+  role: UserRole;
 
   @IsUrl({}, { message: 'avatarUrl must be a valid URL' })
   @ApiProperty({
