@@ -63,7 +63,7 @@ export class AuthCredentialDTO {
     description: 'The role of the user',
     enum: UserRole,
     example: 'CLIENT',
-    required: true,
+    required: false,
   })
   role: UserRole;
 
