@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ServicesModule } from './services/services.module';
+import { NailTechProfileModule } from './nail-tech-profile/nail-tech-profile.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { ServicesModule } from './services/services.module';
     // ],
     PrismaModule,
     AuthModule,
-    ServicesModule
+    ServicesModule,
+    NailTechProfileModule
   ],
 })
 export class AppModule {}

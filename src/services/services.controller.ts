@@ -81,7 +81,7 @@ export class ServicesController {
     description: 'Filter by maximum price',
     example: 100,
   })
-  @ApiBearerAuth('access-token')
+  // @ApiBearerAuth('access-token')
   async getListService(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,

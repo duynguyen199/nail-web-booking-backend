@@ -22,6 +22,7 @@ model User {
   phoneNumber String
   role        UserRole @default(CLIENT)
   avatarUrl   String?  // optional because nullable was allowed
+  nailTechProfile NailTechProfile? // Optional one-to-one relation
   createdAt   DateTime @default(now())
 }
 model Service{
@@ -33,6 +34,20 @@ model Service{
   isActive Boolean @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model NailTechProfile{
+  id String @id @default(uuid())
+  userId String @unique
+  bio String?
+  yearOfExp Int @default(0)
+  ratingAvg Float @default(0.0)
+  bufferMinutes Int @default(15)
+  workingHours Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId]) // Optional: Improves query performance on the foreign key
 }
 enum UserRole {
   CLIENT
