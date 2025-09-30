@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  SetMetadata,
   UseGuards,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
@@ -36,7 +37,10 @@ export class ServicesController {
   async create(@Body() createServiceDto: CreateServiceDto): Promise<Service> {
     return this.servicesService.createService(createServiceDto);
   }
+
+
   @Get()
+  @SetMetadata("isPublic",true)
   @ApiOkResponse({
     description: 'List of services retrieved successfully.',
     schema: {
@@ -90,7 +94,9 @@ export class ServicesController {
   ) {
     return this.servicesService.getListService(page, limit, sortPrice, price);
   }
-  @Delete(':id')
+
+
+  @Delete('/:id')
   @Roles('ADMIN')
   @ApiOkResponse({ description: 'Service removed successfully.' })
   @ApiBearerAuth('access-token')
