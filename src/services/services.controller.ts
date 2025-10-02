@@ -26,10 +26,10 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 @ApiTags('services')
 @Controller('services')
-@UseGuards(RolesGuard)
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
   @Post('/create')
+  @UseGuards(RolesGuard)
   @Roles('ADMIN')
   @ApiOkResponse({ description: 'Service created successfully.' })
   @ApiBody({ type: CreateServiceDto })
@@ -38,9 +38,8 @@ export class ServicesController {
     return this.servicesService.createService(createServiceDto);
   }
 
-
   @Get()
-  @SetMetadata("isPublic",true)
+  @SetMetadata('isPublic', true)
   @ApiOkResponse({
     description: 'List of services retrieved successfully.',
     schema: {
@@ -94,7 +93,6 @@ export class ServicesController {
   ) {
     return this.servicesService.getListService(page, limit, sortPrice, price);
   }
-
 
   @Delete('/:id')
   @Roles('ADMIN')

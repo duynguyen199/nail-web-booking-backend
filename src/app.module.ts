@@ -3,6 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ServicesModule } from './services/services.module';
 import { NailTechProfileModule } from './nail-tech-profile/nail-tech-profile.module';
+import { AvailabilityModule } from './availability/availability.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { NailTechProfileModule } from './nail-tech-profile/nail-tech-profile.mod
     PrismaModule,
     AuthModule,
     ServicesModule,
-    NailTechProfileModule
+    NailTechProfileModule,
+    AvailabilityModule
   ],
 })
 export class AppModule {}

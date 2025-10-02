@@ -47,7 +47,24 @@ model NailTechProfile{
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availability Availability[]
   @@index([userId]) // Optional: Improves query performance on the foreign key
+}
+
+model Availability{
+  id String @id @default(uuid())
+  techId String @unique
+  startAt DateTime
+  endAt DateTime
+  status  AvailabilityStatus @default(AVAILABLE)
+  nailTechProfile NailTechProfile @relation(fields: [techId], references:[id], onDelete:Cascade)
+  @@index([techId]) // Improves query performance on the foreign key
+}
+enum AvailabilityStatus{
+  AVAILABLE
+  BUSY
+  LUNCH
+  ON_HOLD
 }
 enum UserRole {
   CLIENT

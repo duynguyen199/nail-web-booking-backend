@@ -32,7 +32,7 @@ export class ServicesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
-    const where = price ? { price: { lte: price } } : {}; // filter by price if provided (lte for max price)
+    const where = price ? { price: { lte: price } } : {}; // filter by price if provided (lte (lower than equal) for max price)
     const [data, total] = await Promise.all([
       this.prismaService.service.findMany({
         where,
