@@ -1,13 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAvailabilityDto } from './dto/create-availability.dto';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
-
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateAvailabilityDto } from './dto/create-availability.dto';
+import { Availability } from 'generated/prisma';
 @Injectable()
 export class AvailabilityService {
-  create(createAvailabilityDto: CreateAvailabilityDto) {
-    return 'This action adds a new availability';
+  constructor(private prismaService: PrismaService) {}
+  async create(createAvailabilityDto: CreateAvailabilityDto):Promise<Availability> {
+    const tech = await this.prismaService.nailTechProfile.findUnique({
+      where: { id: createAvailabilityDto.techId },
+      include:{user:true}
+    });
+    if(!tech){
+      throw new NotFoundException(404,"Tech ID not found")
+    }
+    if(tech.user.role !== "NAIL_TECH" ){
+      throw new ForbiddenException(403,'Only nail techs can create availability');
+    }
+    
+    return this.prismaService.availability.create({
+      data:{
+        techId:createAvailabilityDto.techId,
+        startAt: new Date(createAvailabilityDto.startAt),
+        endAt: new Date(createAvailabilityDto.endAt),
+        status: createAvailabilityDto.status,
+      }
+    })
   }
 
+  async checkOverlap(dto: CreateAvailabilityDto): Promise<Availability | null> {
+    return this.prismaService.availability.findFirst({
+      where: {
+        techId: dto.techId,
+        startAt: { lt: new Date(dto.endAt) },
+        endAt: { gt: new Date(dto.startAt) },
+      },
+    });
+  }
   findAll() {
     return `This action returns all availability`;
   }

@@ -37,7 +37,8 @@ export class NailTechProfileController {
   ) {}
   @Post('/create')
   @UseGuards(RolesGuard)
-  @Roles('NAIL_TECH')
+  @Roles('NAIL_TECH ,ADMIN')
+
   @ApiOkResponse({ description: 'Service created successfully.' })
   @ApiBody({ type: CreateNailTechProfileDto })
   @ApiBearerAuth('access-token')
