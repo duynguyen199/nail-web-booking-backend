@@ -1,5 +1,8 @@
 import { OnModuleInit, OnModuleDestroy, Injectable } from '@nestjs/common';
-import { PrismaClient } from '/Users/duynguyen/Desktop/nail app backend/naill-booking/generated/prisma';
+
+// Import PrismaClient from the generated client
+const { PrismaClient } = require('../../../prisma/generated/prisma');
+
 @Injectable()
 export class PrismaService
   extends PrismaClient

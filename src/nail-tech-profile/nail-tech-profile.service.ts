@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateNailTechProfileDto } from './dto/create-nail-tech-profile.dto';
-import { NailTechProfile } from 'generated/prisma';
+import { NailTechProfile } from '../types/prisma';
 
 @Injectable()
 export class NailTechProfileService {

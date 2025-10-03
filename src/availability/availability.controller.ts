@@ -16,7 +16,7 @@ import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { ApiBearerAuth, ApiBody, ApiOkResponse } from '@nestjs/swagger';
-import { Availability } from 'generated/prisma';
+import { Availability } from '../types/prisma';
 
 @Controller('availability')
 export class AvailabilityController {

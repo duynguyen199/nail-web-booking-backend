@@ -2,7 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
-import { Availability } from 'generated/prisma';
+import { Availability } from '../types/prisma';
 @Injectable()
 export class AvailabilityService {
   constructor(private prismaService: PrismaService) {}
