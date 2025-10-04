@@ -24,6 +24,7 @@ import {
 } from "@nestjs/swagger";
 import { Availability, AvailabilityStatus } from "@prisma/client";
 
+
 @Controller("availability")
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}

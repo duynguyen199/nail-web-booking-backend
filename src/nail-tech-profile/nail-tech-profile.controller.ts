@@ -24,7 +24,7 @@ import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { CreateNailTechProfileDto } from './dto/create-nail-tech-profile.dto';
 import { NailTechProfileService } from './nail-tech-profile.service';
-import { NailTechProfile } from 'generated/prisma';
+import { NailTechProfile } from '../types/prisma';
 import { NailTechProfileModule } from './nail-tech-profile.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 

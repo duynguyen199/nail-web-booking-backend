@@ -21,7 +21,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Service } from 'generated/prisma';
+import { Service } from '../types/prisma';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { RolesGuard } from 'src/auth/roles.guard';
 @ApiTags('services')

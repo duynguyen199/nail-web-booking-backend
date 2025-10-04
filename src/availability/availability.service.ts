@@ -1,8 +1,8 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Availability, AvailabilityStatus } from '@prisma/client';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
+
 @Injectable()
 export class AvailabilityService {
   constructor(private prismaService: PrismaService) {}

@@ -188,7 +188,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/duynguyen/Desktop/nail app backend/naill-booking/prisma/generated/prisma",
+      "value": "/Users/kyle/Documents/Tmp/trainees/duyn-reactjs/prisma/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -202,7 +202,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/duynguyen/Desktop/nail app backend/naill-booking/prisma/schema.prisma",
+    "sourceFilePath": "/Users/kyle/Documents/Tmp/trainees/duyn-reactjs/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
