@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDateString, IsEnum, IsNotEmpty, IsUUID } from "class-validator";
-import { AvailabilityStatus } from 'generated/prisma';
+import { AvailabilityStatus } from '@prisma/client';  // ✅ correct
 export class CreateAvailabilityDto {
     @IsUUID() // ensures the input is a valid UUID string ("1b2c3d4e-5678-90ab...").
     @IsNotEmpty()

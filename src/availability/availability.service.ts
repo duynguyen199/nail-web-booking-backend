@@ -1,8 +1,8 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Availability, AvailabilityStatus } from '@prisma/client';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
-import { Availability } from 'generated/prisma';
 @Injectable()
 export class AvailabilityService {
   constructor(private prismaService: PrismaService) {}
@@ -37,16 +37,32 @@ export class AvailabilityService {
       },
     });
   }
-  findAll() {
-    return `This action returns all availability`;
+  async findAllStatus() {
+    
+    return this.prismaService.availability.findMany({
+      include:{
+        nailTechProfile:{
+          include:{user:true} // include tech + user info if needed
+        }
+      },
+      orderBy:{startAt:"asc"}
+    });
   }
 
   findOne(id: number) {
     return `This action returns a #${id} availability`;
   }
 
-  update(id: number, updateAvailabilityDto: UpdateAvailabilityDto) {
-    return `This action updates a #${id} availability`;
+  async updateStatus(id: string, status: AvailabilityStatus):Promise<Availability> {
+    const availability = await this.prismaService.availability.findUnique({where:{id}})
+    if(!availability){
+      throw new NotFoundException(404,"Availability Not found")
+    }
+
+    return this.prismaService.availability.update({
+      where:{id},
+      data:{status}
+    })
   }
 
   remove(id: number) {

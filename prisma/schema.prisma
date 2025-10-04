@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/prisma"
 }
 
 datasource db {
@@ -41,15 +40,15 @@ model NailTechProfile {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   ratingAvg     Float         @default(0.0)
-  availability  Availability?
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+availabilities Availability[]  // ✅ one-to-many  
+user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Availability {
   id              String             @id @default(uuid())
-  techId          String             @unique
+  techId          String            
   startAt         DateTime
   endAt           DateTime
   status          AvailabilityStatus @default(AVAILABLE)

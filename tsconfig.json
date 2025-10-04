@@ -20,6 +20,7 @@
       "noImplicitAny": false,
       "strictBindCallApply": false,
       "noFallthroughCasesInSwitch": false,
-      "skipLibCheck": true, // Skip type checking of declaration files
+      "skipLibCheck": true, // Skip type checking of declaration files,
+      
     }
   }
