@@ -16,9 +16,12 @@ model User {
   role            UserRole         @default(CLIENT)
   avatarUrl       String?
   createdAt       DateTime         @default(now())
-  nailTechProfile NailTechProfile?
-}
 
+  nailTechProfile NailTechProfile?
+  clientAppointments Appointment[] @relation("ClientAppointments")
+  techAppointments   Appointment[] @relation("TechAppointments")
+  availabilities     Availability[]  // ✅ one user (tech) → many availabilities
+}
 model Service {
   id              String   @id @default(uuid())
   name            String   @unique
@@ -28,6 +31,9 @@ model Service {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  //relations
+  appointments Appointment[]
 }
 
 model NailTechProfile {
@@ -40,23 +46,51 @@ model NailTechProfile {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   ratingAvg     Float         @default(0.0)
-availabilities Availability[]  // ✅ one-to-many  
-user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Availability {
-  id              String             @id @default(uuid())
-  techId          String            
-  startAt         DateTime
-  endAt           DateTime
-  status          AvailabilityStatus @default(AVAILABLE)
-  nailTechProfile NailTechProfile    @relation(fields: [techId], references: [id], onDelete: Cascade)
+  id        String             @id @default(uuid())
+  techId    String
+  startAt   DateTime
+  endAt     DateTime
+  status    AvailabilityStatus @default(AVAILABLE)
+  tech      User               @relation(fields: [techId], references: [id], onDelete: Cascade)
 
   @@index([techId])
 }
+model Appointment {
+  id        String             @id @default(uuid())
+  clientId  String
+  techId    String
+  serviceId String
 
+  startAt   DateTime
+  endAt     DateTime
+  status    AppointmentStatus  @default(PENDING)
+  reason    String?
+  createdAt DateTime           @default(now())
+
+  // Relations
+  client  User    @relation("ClientAppointments", fields: [clientId], references: [id])
+  tech    User    @relation("TechAppointments", fields: [techId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@index([clientId])
+  @@index([techId])
+  @@index([serviceId])
+}
+
+enum AppointmentStatus{
+  PENDING
+  CONFIRMED
+  DENIED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
 enum AvailabilityStatus {
   AVAILABLE
   BUSY

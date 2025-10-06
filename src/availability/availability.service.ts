@@ -8,7 +8,7 @@ export class AvailabilityService {
   constructor(private prismaService: PrismaService) {}
   async create(createAvailabilityDto: CreateAvailabilityDto):Promise<Availability> {
     const tech = await this.prismaService.nailTechProfile.findUnique({
-      where: { id: createAvailabilityDto.techId },
+      where: { userId: createAvailabilityDto.techId },
       include:{user:true}
     });
     if(!tech){
@@ -38,16 +38,23 @@ export class AvailabilityService {
     });
   }
   async findAllStatus() {
-    
+    console.log('Querying availabilities with tech include');
     return this.prismaService.availability.findMany({
-      include:{
-        nailTechProfile:{
-          include:{user:true} // include tech + user info if needed
-        }
+      include: {
+        tech: {  // ✅ correct relation name
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+            avatarUrl: true,
+          },
+        },
       },
-      orderBy:{startAt:"asc"}
+      orderBy: { startAt: 'asc' },
     });
   }
+  
 
   findOne(id: number) {
     return `This action returns a #${id} availability`;

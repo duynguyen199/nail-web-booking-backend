@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ServicesModule } from './services/services.module';
 import { NailTechProfileModule } from './nail-tech-profile/nail-tech-profile.module';
 import { AvailabilityModule } from './availability/availability.module';
+import { SlotsModule } from './slots/slots.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { AvailabilityModule } from './availability/availability.module';
     AuthModule,
     ServicesModule,
     NailTechProfileModule,
-    AvailabilityModule
+    AvailabilityModule,
+    SlotsModule
   ],
 })
 export class AppModule {}
