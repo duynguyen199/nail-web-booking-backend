@@ -9,32 +9,43 @@ export class SlotsService {
   async getAvailableSlots(techId: string, serviceId: string, date: string) {
     console.log('Tech ID:', techId);
 
-    // ✅ Step 1: Find the nail tech profile (not user)
+    // ✅ Step 1: Validate and parse the date
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
+
+    // ✅ Step 2: Define start and end of the requested day in UTC
+    const dateString = parsedDate.toISOString().split('T')[0]; // Extract YYYY-MM-DD
+    const dayStart = new Date(`${dateString}T00:00:00.000Z`); // UTC midnight
+    const dayEnd = new Date(`${dateString}T23:59:59.999Z`); // UTC end of day
+
+    console.log('Day Start:', dayStart.toISOString());
+    console.log('Day End:', dayEnd.toISOString());
+
+    // ✅ Step 3: Find the nail tech profile (not user)
     const tech = await this.prismaService.nailTechProfile.findUnique({
       where: { id: techId },
-      include: { user: true }, // ✅ NailTechProfile → user
+      include: { user: true },
     });
 
     if (!tech || tech.user.role !== 'NAIL_TECH') {
       throw new BadRequestException('Invalid or non-tech user');
     }
 
-    // ✅ Step 2: Check if service exists
+    // ✅ Step 4: Check if service exists
     const service = await this.prismaService.service.findUnique({
       where: { id: serviceId },
     });
     if (!service) throw new NotFoundException('Service Not Found');
 
-    // ✅ Step 3: Define start and end of the requested day
-    const startOfDay = new Date(`${date}T00:00:00Z`);
-    const endOfDay = new Date(`${date}T23:59:59Z`);
-
-    // ✅ Step 4: Find availability for this tech on that date
-    const availability = await this.prismaService.availability.findFirst({
+    // ✅ Step 5: Find availability for this tech on that date
+ 
+    const availability = await this.prismaService.availability.findMany({
       where: {
         techId,
-        startAt: { lt: endOfDay },
-        endAt: { gt: startOfDay },
+        startAt: { lt: dayEnd },
+        endAt: { gt: dayStart },
         status: 'AVAILABLE',
       },
     });
@@ -42,11 +53,11 @@ export class SlotsService {
     if (!availability)
       throw new NotFoundException('Tech is not available for this date');
 
-    // ✅ Step 5: Get buffer + service duration
+    // ✅ Step 6: Get buffer + service duration
     const buffer = tech.bufferMinutes ?? 15;
     const serviceDuration = service.durationMinutes;
 
-    // ✅ Step 6: Generate available slots
+    // ✅ Step 7: Generate available slots
     const slots: { startAt: Date; endAt: Date }[] = [];
     let slotStart = new Date(availability.startAt);
     const slotEndBoundary = new Date(availability.endAt);
@@ -54,7 +65,7 @@ export class SlotsService {
     while (isBefore(addMinutes(slotStart, serviceDuration), slotEndBoundary)) {
       const slotEnd = addMinutes(slotStart, serviceDuration);
 
-      // ✅ Step 7: Skip overlapping appointments
+      // ✅ Step 8: Skip overlapping appointments
       const overlapping = await this.prismaService.appointment.findFirst({
         where: {
           techId,
@@ -73,15 +84,15 @@ export class SlotsService {
         slots.push({ startAt: slotStart, endAt: slotEnd });
       }
 
-      // ✅ Step 8: Move to next slot (service + buffer)
+      // ✅ Step 9: Move to next slot (service + buffer)
       slotStart = addMinutes(slotStart, serviceDuration + buffer);
     }
 
-    // ✅ Step 9: Return result
+    // ✅ Step 10: Return result
     return {
       techId,
       serviceId,
-      date,
+      date: parsedDate.toISOString(),
       availableSlots: slots,
     };
   }
