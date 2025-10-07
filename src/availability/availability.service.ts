@@ -1,6 +1,6 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Availability, AvailabilityStatus } from '@prisma/client';
+import { Availability, AvailabilityStatus } from '../types/prisma';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
 
 @Injectable()

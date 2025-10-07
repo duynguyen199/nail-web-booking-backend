@@ -35,12 +35,12 @@ export type NailTechProfile = {
 
 export type Availability = {
   id: string;
-  nailTechId: string;
-  startTime: Date;
-  endTime: Date;
+  techId: string;
+  startAt: Date;
+  endAt: Date;
   status: 'AVAILABLE' | 'BUSY' | 'LUNCH' | 'ON_HOLD';
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export enum AvailabilityStatus {

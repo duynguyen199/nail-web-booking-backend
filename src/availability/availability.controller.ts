@@ -22,7 +22,7 @@ import {
   ApiOkResponse,
   ApiQuery,
 } from "@nestjs/swagger";
-import { Availability, AvailabilityStatus } from "@prisma/client";
+import { Availability, AvailabilityStatus } from "../types/prisma";
 
 
 @Controller("availability")
