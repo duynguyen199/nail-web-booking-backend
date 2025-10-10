@@ -1,0 +1,139 @@
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { Appointment } from 'generated/prisma';
+import { addMinutes, isAfter, isBefore, parseISO } from 'date-fns';
+
+@Injectable()
+export class AppointmentService {
+  constructor(private prismaService: PrismaService) {}
+
+  async makeAppoinment(
+    createAppointmentDto: CreateAppointmentDto,
+  ): Promise<Appointment> {
+    const { clientId, serviceId, techId, startAt, reason } =
+      createAppointmentDto;
+    const service = await this.prismaService.service.findUnique({
+      where: { id: serviceId },
+    });
+    if (!service) throw new NotFoundException('Service not found');
+
+    const techProfile = await this.prismaService.nailTechProfile.findUnique({
+      where: { userId: techId },
+    });
+    if (!techProfile) throw new NotFoundException('Nail tech not found');
+
+    const tech = await this.prismaService.user.findUnique({
+      where: { id: techId },
+    });
+    if (tech.role !== 'NAIL_TECH' || !tech)
+      throw new ForbiddenException('Invalid or non-tech user');
+
+    const client = await this.prismaService.user.findUnique({
+      where: { id: clientId },
+    });
+    if (!client || client.role !== 'CLIENT') {
+      throw new ForbiddenException('Invalid or non-client user');
+    }
+    const start = parseISO(startAt); //Client passes startAt (e.g., 2025-10-12T10:00:00.000Z).
+    const end = addMinutes(start, service.durationMinutes); //duration 60 → start=10:00, end=11:00.
+
+    //validate working hours
+    const [startH, startM] = techProfile.workingHours.start
+      .split(':')
+      .map(Number);
+    //example ['09', '00'] becomes [9, 0], and ['17', '00'] becomes [17, 0].
+
+    const [endH, endM] = techProfile.workingHours.end.split(':').map(Number);
+    const workStart = new Date(start);
+    const workEnd = new Date(start);
+
+    workStart.setUTCHours(startH, startM, 0, 0);
+    //.setUTCHours(startH, startM, 0, 0): Sets the time components of workStart to the working hours start time:
+    workEnd.setUTCHours(endH, endM, 0, 0);
+
+    //Ensures the entire appointment duration fits within the technician's working hours.
+    if (isBefore(start, workStart) || isAfter(end, workEnd)) {
+      throw new BadRequestException('Appointment times outside working hours');
+    }
+
+    const overlapping = await this.prismaService.appointment.findFirst({
+      where: {
+        techId,
+        status: { in: ['PENDING', 'CONFIRMED'] },
+        OR: [{ startAt: { lt: end }, endAt: { gt: start } }],
+      },
+    });
+    if (overlapping) throw new BadRequestException('This time is booked');
+
+    const buffer = techProfile.bufferMinutes ?? 15;
+    const bufferConflict = await this.prismaService.appointment.findFirst({
+      where: {
+        techId,
+        status: { in: ['PENDING', 'CONFIRMED'] },
+        OR: [
+          { endAt: { gt: addMinutes(start, -buffer), lt: start } },
+          { startAt: { lt: addMinutes(end, buffer), gt: end } },
+        ],
+      },
+    });
+    if (bufferConflict)
+      throw new BadRequestException(
+        `Must respect ${buffer}-minute buffer between bookings`,
+      );
+    return this.prismaService.appointment.create({
+      data: {
+        clientId,
+        techId,
+        serviceId,
+        startAt: start,
+        endAt: end,
+        reason,
+        status: 'PENDING',
+      },
+    });
+  }
+  async getAllAppointment(): Promise<Appointment[]> {
+    return this.prismaService.appointment.findMany({
+      include: {
+        client: { select: { username: true, email: true } },
+        tech: { select: { username: true, email: true } },
+        service: true,
+      },
+      orderBy: { startAt: 'asc' },
+    });
+  }
+  async confirmAppointment(id:string):Promise<Appointment>{
+    const appointment = await this.prismaService.appointment.findUnique({
+      where:{id}
+    })
+    if(!appointment) throw new NotFoundException("Not appoitnment found")
+    if(appointment.status !== "PENDING"){
+      throw new BadRequestException(
+        `Only pending appointments can be confirmed. Current status: ${appointment.status}`,
+      );
+    }
+    return this.prismaService.appointment.update({
+      where:{id},
+      data:{status:"CONFIRMED"}
+    })
+  }
+  async denyAppointment(id:string, reason: string):Promise<Appointment>{
+    const appointment = await this.prismaService.appointment.findUnique({
+      where:{id}
+    }) 
+    if(!appointment) throw new NotFoundException("No appointment found")
+    if(appointment.status !== "PENDING"){
+      throw new BadRequestException(`Only pending appointments can be confirmed. Current status: ${appointment.status}`)
+    }
+    return this.prismaService.appointment.update({
+      where:{id},
+      data:{status:"DENIED",reason}
+    })
+  }
+}

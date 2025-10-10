@@ -5,6 +5,7 @@ import { ServicesModule } from './services/services.module';
 import { NailTechProfileModule } from './nail-tech-profile/nail-tech-profile.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { SlotsModule } from './slots/slots.module';
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { SlotsModule } from './slots/slots.module';
     ServicesModule,
     NailTechProfileModule,
     AvailabilityModule,
-    SlotsModule
+    SlotsModule,
+    AppointmentModule
   ],
 })
 export class AppModule {}
