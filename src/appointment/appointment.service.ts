@@ -98,7 +98,62 @@ export class AppointmentService {
       },
     });
   }
-  async getAllAppointment(): Promise<Appointment[]> {
+  // async getAllAppointment(): Promise<Appointment[]> {
+  //   return this.prismaService.appointment.findMany({
+  //     include: {
+  //       client: { select: { username: true, email: true } },
+  //       tech: { select: { username: true, email: true } },
+  //       service: true,
+  //     },
+  //     orderBy: { startAt: 'asc' },
+  //   });
+  // }
+  async confirmAppointment(id: string): Promise<Appointment> {
+    const appointment = await this.prismaService.appointment.findUnique({
+      where: { id },
+    });
+    if (!appointment) throw new NotFoundException('Not appoitnment found');
+    if (appointment.status !== 'PENDING') {
+      throw new BadRequestException(
+        `Only pending appointments can be confirmed. Current status: ${appointment.status}`,
+      );
+    }
+    return this.prismaService.appointment.update({
+      where: { id },
+      data: { status: 'CONFIRMED' },
+    });
+  }
+  async denyAppointment(id: string, reason: string): Promise<Appointment> {
+    const appointment = await this.prismaService.appointment.findUnique({
+      where: { id },
+    });
+    if (!appointment) throw new NotFoundException('No appointment found');
+    if (appointment.status !== 'PENDING') {
+      throw new BadRequestException(
+        `Only pending appointments can be confirmed. Current status: ${appointment.status}`,
+      );
+    }
+    return this.prismaService.appointment.update({
+      where: { id },
+      data: { status: 'DENIED', reason },
+    });
+  }
+  async getAppointments(
+    role: 'CILENT' | 'NAIL_TECH' | 'ADMIN',
+    userId: string,
+    status?: string,
+    from?: string,
+    to?: string,
+  ): Promise<Appointment[]> {
+    const where: any = {};
+    if (role === 'CILENT') where.clientId = userId;
+    else if (role === 'NAIL_TECH') where.techId = userId;
+    if (status) where.status = status;
+    if (from || to) {
+      where.startAt = {};
+      if (from) where.startAt.gte = new Date(from);
+      if (to) where.startAt.lte = new Date(to);
+    }
     return this.prismaService.appointment.findMany({
       include: {
         client: { select: { username: true, email: true } },
@@ -107,33 +162,5 @@ export class AppointmentService {
       },
       orderBy: { startAt: 'asc' },
     });
-  }
-  async confirmAppointment(id:string):Promise<Appointment>{
-    const appointment = await this.prismaService.appointment.findUnique({
-      where:{id}
-    })
-    if(!appointment) throw new NotFoundException("Not appoitnment found")
-    if(appointment.status !== "PENDING"){
-      throw new BadRequestException(
-        `Only pending appointments can be confirmed. Current status: ${appointment.status}`,
-      );
-    }
-    return this.prismaService.appointment.update({
-      where:{id},
-      data:{status:"CONFIRMED"}
-    })
-  }
-  async denyAppointment(id:string, reason: string):Promise<Appointment>{
-    const appointment = await this.prismaService.appointment.findUnique({
-      where:{id}
-    }) 
-    if(!appointment) throw new NotFoundException("No appointment found")
-    if(appointment.status !== "PENDING"){
-      throw new BadRequestException(`Only pending appointments can be confirmed. Current status: ${appointment.status}`)
-    }
-    return this.prismaService.appointment.update({
-      where:{id},
-      data:{status:"DENIED",reason}
-    })
   }
 }

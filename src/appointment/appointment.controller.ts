@@ -6,6 +6,8 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AppointmentService } from './appointment.service';
@@ -19,6 +21,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { DenyAppointmentDto } from './dto/deny-appointment-dto';
 
@@ -55,14 +58,14 @@ export class AppointmentController {
     return appoinment;
   }
 
-  @Get()
-  @ApiBearerAuth('access-token')
-  @UseGuards(RolesGuard)
-  @Roles('CLIENT', 'NAIL_TECH', 'ADMIN')
-  @ApiOkResponse({ description: 'List all appointments' })
-  async findAll(): Promise<Appointment[]> {
-    return this.appointmentService.getAllAppointment();
-  }
+  // @Get()
+  // @ApiBearerAuth('access-token')
+  // @UseGuards(RolesGuard)
+  // @Roles('CLIENT', 'NAIL_TECH', 'ADMIN')
+  // @ApiOkResponse({ description: 'List all appointments' })
+  // async findAll(): Promise<Appointment[]> {
+  //   return this.appointmentService.getAllAppointment();
+  // }
 
   @Patch(':id/confirm')
   @UseGuards(RolesGuard)
@@ -95,37 +98,63 @@ export class AppointmentController {
   }
 
   @Patch(':id/deny')
-@UseGuards(RolesGuard)
-@Roles('NAIL_TECH', 'ADMIN')
-@ApiBearerAuth('access-token')
-@ApiOperation({ summary: 'Deny an appointment (Tech or Admin only)' })
-@ApiParam({
-  name: 'id',
-  description: 'Appointment ID to deny',
-  example: '83e21ad3-2a71-42aa-a7f9-9d2e8db4a55b',
-})
-@ApiBody({
-  type: DenyAppointmentDto,
-  examples: {
-    example: {
-      summary: 'Deny appointment with reason',
-      value: {
+  @UseGuards(RolesGuard)
+  @Roles('NAIL_TECH', 'ADMIN')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Deny an appointment (Tech or Admin only)' })
+  @ApiParam({
+    name: 'id',
+    description: 'Appointment ID to deny',
+    example: '83e21ad3-2a71-42aa-a7f9-9d2e8db4a55b',
+  })
+  @ApiBody({
+    type: DenyAppointmentDto,
+    examples: {
+      example: {
+        summary: 'Deny appointment with reason',
+        value: {
+          reason: 'Overlapping appointment with another client',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Appointment successfully denied',
+    schema: {
+      example: {
+        id: '83e21ad3-2a71-42aa-a7f9-9d2e8db4a55b',
+        status: 'DENIED',
         reason: 'Overlapping appointment with another client',
       },
     },
-  },
-})
-@ApiOkResponse({
-  description: 'Appointment successfully denied',
-  schema: {
-    example: {
-      id: '83e21ad3-2a71-42aa-a7f9-9d2e8db4a55b',
-      status: 'DENIED',
-      reason: 'Overlapping appointment with another client',
-    },
-  },
-})
-  async denyAppointment(@Param("id") id: string, @Body() body:DenyAppointmentDto){
-    return this.appointmentService.denyAppointment(id,body.reason)
+  })
+  async denyAppointment(
+    @Param('id') id: string,
+    @Body() body: DenyAppointmentDto,
+  ) {
+    return this.appointmentService.denyAppointment(id, body.reason);
+  }
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles("CLIENT","NAIL_TECH","ADMIN")
+  @ApiBearerAuth("access-token")
+  @ApiQuery({
+    name:"status",required:false
+  })
+  @ApiQuery({
+    name:"from", required:false
+  })
+  @ApiQuery({ name: 'to', required: false })
+  async getAppointments(
+    @Req()req:Request,
+    @Query("status")status?:string,
+    @Query("from")from?:string,
+    @Query("to")to?:string,
+  ):Promise<Appointment[]>{
+    const user = (req as any).user;
+    const role = user.role
+    const userId = user.id
+    return this.appointmentService.getAppointments(role,userId,status,from,to)
   }
 }

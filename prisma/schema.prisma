@@ -22,6 +22,9 @@ model User {
   clientAppointments Appointment[] @relation("ClientAppointments")
   techAppointments   Appointment[] @relation("TechAppointments")
   availabilities     Availability[]  // ✅ one user (tech) → many availabilities
+
+  portfolioImages PortfolioImage[]
+  notifications   Notification[]
 }
 model Service {
   id              String   @id @default(uuid())
@@ -84,6 +87,39 @@ model Appointment {
   @@index([serviceId])
 }
 
+model PortfolioImage{
+  id String @id @default(uuid())
+  techId String  // id của User (role = NAIL_TECH)
+  key String      // object key trong S3/MinIO
+  url String     // public URL (hoặc presigned tạm thời)
+  createdAt DateTime @default(now())
+
+  tech User @relation(fields : [techId], references: [id], onDelete:Cascade)
+  @@index([techId])
+}
+
+model Notification{
+  id String @id @default(uuid())
+  userId String
+  type NotificationType
+  title String
+  body String?
+  isRead Boolean @default(false)
+  payload   Json?             // 👈 structured metadata for frontend
+  createdAt DateTime @default(now())
+  readAt    DateTime?         // 👈 when user viewed it
+
+  user User @relation(fields:[userId], references: [id], onDelete:Cascade)
+  @@index([userId])
+
+}
+enum NotificationType{
+  PORTFOLIO_UPLOAD
+  APPOINTMENT_CREATED
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_DENIED
+  GENERAL
+}
 enum AppointmentStatus{
   PENDING
   CONFIRMED

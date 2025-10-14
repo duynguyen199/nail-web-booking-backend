@@ -6,6 +6,9 @@ import { NailTechProfileModule } from './nail-tech-profile/nail-tech-profile.mod
 import { AvailabilityModule } from './availability/availability.module';
 import { SlotsModule } from './slots/slots.module';
 import { AppointmentModule } from './appointment/appointment.module';
+import { S3Module } from './s3/s3.module';
+import { PortfolioModule } from './portfolio/portfolio.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -27,7 +30,10 @@ import { AppointmentModule } from './appointment/appointment.module';
     NailTechProfileModule,
     AvailabilityModule,
     SlotsModule,
-    AppointmentModule
+    AppointmentModule,
+    S3Module,
+    PortfolioModule,
+    NotificationModule
   ],
 })
 export class AppModule {}
