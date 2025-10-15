@@ -98,21 +98,21 @@ model PortfolioImage{
   @@index([techId])
 }
 
-model Notification{
-  id String @id @default(uuid())
-  userId String
-  type NotificationType
-  title String
-  body String?
-  isRead Boolean @default(false)
-  payload   Json?             // 👈 structured metadata for frontend
-  createdAt DateTime @default(now())
-  readAt    DateTime?         // 👈 when user viewed it
+  model Notification{
+    id String @id @default(uuid())
+    userId String
+    type NotificationType
+    title String
+    body String?
+    isRead Boolean @default(false)
+    payload   Json?             // 👈 structured metadata for frontend
+    createdAt DateTime @default(now())
+    readAt    DateTime?         // 👈 when user viewed it
 
-  user User @relation(fields:[userId], references: [id], onDelete:Cascade)
-  @@index([userId])
+    user User @relation(fields:[userId], references: [id], onDelete:Cascade)
+    @@index([userId])
 
-}
+  }
 enum NotificationType{
   PORTFOLIO_UPLOAD
   APPOINTMENT_CREATED
