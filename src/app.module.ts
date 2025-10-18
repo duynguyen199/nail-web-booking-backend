@@ -9,6 +9,8 @@ import { AppointmentModule } from './appointment/appointment.module';
 import { S3Module } from './s3/s3.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { NotificationModule } from './notification/notification.module';
+import { QueueModule } from './queue/queue.module';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -33,7 +35,9 @@ import { NotificationModule } from './notification/notification.module';
     AppointmentModule,
     S3Module,
     PortfolioModule,
-    NotificationModule
+    NotificationModule,
+    QueueModule,
+    SmsModule
   ],
 })
 export class AppModule {}

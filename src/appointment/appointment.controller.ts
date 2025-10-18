@@ -24,6 +24,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { DenyAppointmentDto } from './dto/deny-appointment-dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Controller('appointment')
 export class AppointmentController {
@@ -51,11 +52,11 @@ export class AppointmentController {
   async makeAppointment(
     @Body() createAppointmentDto: CreateAppointmentDto,
   ): Promise<Appointment> {
-    const appoinment =
+    const appointment =
       await this.appointmentService.makeAppoinment(createAppointmentDto);
-    if (!appoinment)
+    if (!appointment)
       throw new BadRequestException('Bad Request for appointment');
-    return appoinment;
+    return appointment;
   }
 
   // @Get()
@@ -157,4 +158,15 @@ export class AppointmentController {
     const userId = user.id
     return this.appointmentService.getAppointments(role,userId,status,from,to)
   }
+  // appointment.controller.ts
+@Post(':id/checkin')
+@UseGuards(RolesGuard)
+@Roles('CLIENT', 'ADMIN')
+@ApiBearerAuth('access-token')
+@ApiOperation({ summary: 'Client checks in for appointment (within 30min grace window)' })
+async checkIn(@Param('id') id: string) {
+  return this.appointmentService.checkInAppointment(id);
+}
+
+ 
 }

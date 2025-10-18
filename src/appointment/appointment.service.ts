@@ -8,10 +8,18 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Appointment } from 'generated/prisma';
 import { addMinutes, isAfter, isBefore, parseISO } from 'date-fns';
+import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
 
 @Injectable()
+
 export class AppointmentService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    @InjectQueue('reminderQueue') private reminderQueue: Queue,
+
+    @InjectQueue('autoCancel') private readonly autoCancelQueue: Queue,
+  ) {}
 
   async makeAppoinment(
     createAppointmentDto: CreateAppointmentDto,
@@ -111,17 +119,25 @@ export class AppointmentService {
   async confirmAppointment(id: string): Promise<Appointment> {
     const appointment = await this.prismaService.appointment.findUnique({
       where: { id },
+      data:{status:"CONFIRMED"},
+      include: { client: true },
+
     });
     if (!appointment) throw new NotFoundException('Not appoitnment found');
-    if (appointment.status !== 'PENDING') {
-      throw new BadRequestException(
-        `Only pending appointments can be confirmed. Current status: ${appointment.status}`,
-      );
-    }
-    return this.prismaService.appointment.update({
-      where: { id },
-      data: { status: 'CONFIRMED' },
-    });
+
+    const reminderTime = 
+      new Date(appointment.startAt).getTime() -24 *60*60*1000
+    const delayReminder = Math.max(0, reminderTime - Date.now());
+    await this.reminderQueue.add("sendReminder",{appointmentId:id},{delay:delayReminder})
+
+    const cancelTime = 
+      new Date(appointment.startAt).getTime() + 
+        parseInt(process.env.LATE_THRESHOLD_MIN || 30,10) * 60_000
+    const delayCancel = Math.max(0, cancelTime-Date.now())
+    await this.autoCancelQueue.add("autoCancel", {appointmentId:id}, {delay:delayCancel})
+
+
+    return appointment
   }
   async denyAppointment(id: string, reason: string): Promise<Appointment> {
     const appointment = await this.prismaService.appointment.findUnique({
@@ -139,14 +155,14 @@ export class AppointmentService {
     });
   }
   async getAppointments(
-    role: 'CILENT' | 'NAIL_TECH' | 'ADMIN',
+    role: 'CLIENT' | 'NAIL_TECH' | 'ADMIN',
     userId: string,
     status?: string,
     from?: string,
     to?: string,
   ): Promise<Appointment[]> {
     const where: any = {};
-    if (role === 'CILENT') where.clientId = userId;
+    if (role === 'CLIENT') where.clientId = userId;
     else if (role === 'NAIL_TECH') where.techId = userId;
     if (status) where.status = status;
     if (from || to) {
@@ -155,6 +171,7 @@ export class AppointmentService {
       if (to) where.startAt.lte = new Date(to);
     }
     return this.prismaService.appointment.findMany({
+      where,
       include: {
         client: { select: { username: true, email: true } },
         tech: { select: { username: true, email: true } },
@@ -162,5 +179,32 @@ export class AppointmentService {
       },
       orderBy: { startAt: 'asc' },
     });
+  }
+  async checkInAppointment(id: string): Promise<{ message: string }> {
+    const appt = await this.prismaService.appointment.findUnique({ where: { id } });
+
+    if (!appt) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    const now = new Date();
+    const lateLimit =
+      new Date(appt.startAt).getTime() +
+      parseInt(process.env.LATE_THRESHOLD_MIN || '30', 10) * 60_000;
+
+    if (now.getTime() > lateLimit) {
+      await this.prismaService.appointment.update({
+        where: { id },
+        data: { status: 'CANCELLED' },
+      });
+      return { message: 'Too late! Appointment automatically cancelled.' };
+    }
+
+    await this.prismaService.appointment.update({
+      where: { id },
+      data: { status: 'CHECKED_IN' },
+    });
+
+    return { message: 'Check-in successful!' };
   }
 }
