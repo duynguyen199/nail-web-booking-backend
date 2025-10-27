@@ -10,6 +10,7 @@ import { Appointment } from 'generated/prisma';
 import { addMinutes, isAfter, isBefore, parseISO } from 'date-fns';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
+import { AppConfig } from 'src/config/app.confif';
 
 @Injectable()
 
@@ -132,7 +133,7 @@ export class AppointmentService {
 
     const cancelTime = 
       new Date(appointment.startAt).getTime() + 
-        parseInt(process.env.LATE_THRESHOLD_MIN || 30,10) * 60_000
+        AppConfig.graceMinutes*60_00 // use appConfig
     const delayCancel = Math.max(0, cancelTime-Date.now())
     await this.autoCancelQueue.add("autoCancel", {appointmentId:id}, {delay:delayCancel})
 
@@ -181,30 +182,20 @@ export class AppointmentService {
     });
   }
   async checkInAppointment(id: string): Promise<{ message: string }> {
-    const appt = await this.prismaService.appointment.findUnique({ where: { id } });
+    const appt = await this.prismaService.appointment.findUnique({ where: { id },include: { checkins: true } });
 
     if (!appt) {
       throw new NotFoundException('Appointment not found');
     }
 
-    const now = new Date();
-    const lateLimit =
-      new Date(appt.startAt).getTime() +
-      parseInt(process.env.LATE_THRESHOLD_MIN || '30', 10) * 60_000;
-
-    if (now.getTime() > lateLimit) {
-      await this.prismaService.appointment.update({
-        where: { id },
-        data: { status: 'CANCELLED' },
-      });
-      return { message: 'Too late! Appointment automatically cancelled.' };
-    }
-
+    await this.prismaService.checkin.create({
+      data:{appointmentId:id}
+    })
     await this.prismaService.appointment.update({
       where: { id },
-      data: { status: 'CHECKED_IN' },
-    });
-
-    return { message: 'Check-in successful!' };
-  }
+      data: { status: 'CHECKED_IN' }
+      });
+      return { message: 'Check-in successful!' };
+      }
+  
 }

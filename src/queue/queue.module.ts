@@ -16,7 +16,7 @@ import { ReminderProcessors } from 'src/appointment/processors/reminder/reminder
     }),
     BullModule.registerQueue(
       { name: 'reminderQueue' },
-      { name: 'autoCancelQueue' },
+      { name: 'autoCancel' },
     ),
     NotificationModule,
   ],

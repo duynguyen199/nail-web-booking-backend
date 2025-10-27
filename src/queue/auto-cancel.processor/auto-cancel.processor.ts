@@ -14,12 +14,17 @@ export class AutoCancelProcessor extends WorkerHost {
 
     async process(job:Job<{appointmentId:string}>){
         const {appointmentId} = job.data
-        const appt = await this.prisma.appointment.findUnique({where:{id:appointmentId}})
+        const appt = await this.prisma.appointment.findUnique({where:{id:appointmentId}, include:{checkins:true}})
         if(!appt || appt.status !== "CONFIRMED") return
+
+        if(appt.checkins && appt.checkins.lenght == 0){
+        
         await this.prisma.appointment.update({
             where:{id:appointmentId},
             data:{status:"NO_SHOW"}
         })
+        }
+
         await this.prisma.notification.createNotification(
             appt.clientId,
             NotificationType.APPOINTMENT_DENIED,

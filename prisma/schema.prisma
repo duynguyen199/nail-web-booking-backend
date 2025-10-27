@@ -81,7 +81,7 @@ model Appointment {
   client  User    @relation("ClientAppointments", fields: [clientId], references: [id])
   tech    User    @relation("TechAppointments", fields: [techId], references: [id])
   service Service @relation(fields: [serviceId], references: [id])
-
+  checkins     Checkin[]
   @@index([clientId])
   @@index([techId])
   @@index([serviceId])
@@ -113,6 +113,13 @@ model PortfolioImage{
     @@index([userId])
 
   }
+model Checkin {
+  id            String      @id @default(uuid())
+  appointmentId String      @unique
+  createdAt     DateTime    @default(now())
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+}
 enum NotificationType{
   PORTFOLIO_UPLOAD
   APPOINTMENT_CREATED
